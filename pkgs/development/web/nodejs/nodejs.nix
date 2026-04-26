@@ -512,6 +512,12 @@ let
             ++ lib.optional (
               majorVersion == "22" && stdenv.buildPlatform.isDarwin
             ) "test/sequential/test-http-server-request-timeouts-mixed.js"
+            # https://github.com/NixOS/nixpkgs/pull/507974#issuecomment-4249433124
+            # OpenSSL reports different errors
+            # https://github.com/nodejs/node/pull/62629
+            # patch does not apply
+            ++ lib.optional (!lib.versionAtLeast version "24") "test-tls-junk-server"
+            ++ lib.optional (majorVersion == "22") "test-tls-alert-handling"
           )
         }"
       ];
@@ -678,7 +684,7 @@ let
         broken =
           !canExecute && !canEmulate && (stdenv.buildPlatform.parsed.cpu != stdenv.hostPlatform.parsed.cpu);
         mainProgram = "node";
-        knownVulnerabilities = lib.optional (lib.versionOlder version "18") "This NodeJS release has reached its end of life. See https://nodejs.org/en/about/releases/.";
+        knownVulnerabilities = lib.optional (lib.versionOlder version "22") "This NodeJS release has reached its end of life. See https://nodejs.org/en/about/releases/.";
       };
 
       passthru.python = python; # to ensure nodeEnv uses the same version

@@ -603,6 +603,10 @@ in
 
     environment.systemPackages = [ cfg.package ];
 
+    environment.variables = {
+      SYSTEMD_XKB_DIRECTORY = "/etc/X11/xkb";
+    };
+
     environment.etc =
       let
         # generate contents for /etc/systemd/${dir} from attrset of links and packages
@@ -800,7 +804,10 @@ in
     systemd.services.systemd-update-utmp.restartIfChanged = false;
     systemd.targets.local-fs.unitConfig.X-StopOnReconfiguration = true;
     systemd.targets.remote-fs.unitConfig.X-StopOnReconfiguration = true;
-    systemd.services.systemd-importd.environment = proxy_env;
+    systemd.services.systemd-importd = lib.mkIf cfg.package.withImportd {
+      environment = proxy_env;
+      path = [ pkgs.gnupg ];
+    };
     systemd.services.systemd-pstore.wantedBy = [ "sysinit.target" ]; # see #81138
 
     # NixOS has kernel modules in a different location, so override that here.
